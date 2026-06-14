@@ -1,8 +1,8 @@
 // OptiFit 2.0 API Client Service
 import axios from 'axios';
 
-// Connect to Flask backend (port 5000)
-const API_BASE_URL = 'http://localhost:5000';
+// Connect to Flask backend (port 5000) dynamically using current hostname
+const API_BASE_URL = `http://${window.location.hostname}:5000`;
 
 const api = axios.create({
   baseURL: API_BASE_URL,

@@ -8,7 +8,18 @@
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
-  /* Custom Scrollbar for modern dashboards */
+  ::selection {
+    @apply bg-indigo-500/30 text-white;
+  }
+
+  * {
+    @apply border-slate-200 dark:border-slate-800;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -24,40 +35,120 @@
   }
 }
 
-/* Glassmorphism Styles */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+@layer components {
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  }
+
+  .dark .glass-panel {
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+    transition: all 0.3s ease;
+  }
+  .glass-card:hover {
+    background: rgba(255, 255, 255, 0.75);
+    box-shadow: 0 8px 40px 0 rgba(31, 38, 135, 0.1);
+  }
+
+  .dark .glass-card {
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  }
+  .dark .glass-card:hover {
+    background: rgba(15, 23, 42, 0.7);
+    box-shadow: 0 8px 40px 0 rgba(0, 0, 0, 0.4);
+  }
+
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-gold-500;
+  }
+
+  .gradient-bg {
+    @apply bg-gradient-to-tr from-slate-900 via-indigo-950 to-slate-900;
+  }
+
+  .gradient-gold {
+    @apply bg-gradient-to-r from-gold-500 to-amber-600;
+  }
+
+  .gradient-fashion {
+    background: linear-gradient(135deg, #0B0F19 0%, #1a1040 50%, #0B0F19 100%);
+  }
+
+  .scale-hover {
+    @apply transition-transform duration-300 hover:scale-[1.02] active:scale-[0.99];
+  }
+
+  .shimmer-bg {
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+
+  .text-glow {
+    text-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+  }
+
+  .card-border-gradient {
+    border-image: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(220,170,61,0.2)) 1;
+  }
+
+  .masonry-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-auto-rows: 10px;
+    gap: 1.25rem;
+  }
+
+  .masonry-item {
+    grid-row-end: span var(--row-span, 35);
+  }
+
+  .masonry-item:nth-child(3n) {
+    --row-span: 40;
+  }
+  .masonry-item:nth-child(4n) {
+    --row-span: 30;
+  }
+  .masonry-item:nth-child(5n) {
+    --row-span: 45;
+  }
 }
 
-.dark .glass-panel {
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
+@layer base {
+  input, select, textarea {
+    @apply bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-300 text-slate-800 dark:text-slate-200;
+  }
 
-/* Elegant Gradients */
-.gradient-text {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-gold-500;
-}
+  input::placeholder {
+    @apply text-slate-400 dark:text-slate-600;
+  }
 
-.gradient-bg {
-  @apply bg-gradient-to-tr from-slate-900 via-indigo-950 to-slate-900;
-}
+  select {
+    @apply appearance-none cursor-pointer;
+  }
 
-.gradient-gold {
-  @apply bg-gradient-to-r from-gold-500 to-amber-600;
-}
+  button:focus-visible {
+    @apply outline-2 outline-offset-2 outline-indigo-500;
+  }
 
-/* Hover Micro-interactions */
-.scale-hover {
-  @apply transition-transform duration-300 hover:scale-[1.02] active:scale-[0.99];
-}
-
-/* Form Styling overrides */
-input, select, textarea {
-  @apply bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-800 dark:text-slate-200;
+  a {
+    @apply transition-colors duration-200;
+  }
 }

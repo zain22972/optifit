@@ -51,8 +51,8 @@ def extract_image_features(image_path):
     gray_img = img_resized.convert('L')
     gray_np = np.array(gray_img, dtype=float)
     # Sobel-like filter elements
-    gx = np.diff(gray_np, axis=1)[:, :-1]
-    gy = np.diff(gray_np, axis=0)[:-1, :]
+    gx = np.diff(gray_np, axis=1)[:-1, :]
+    gy = np.diff(gray_np, axis=0)[:, :-1]
     grad_mag = np.sqrt(gx**2 + gy**2)
     edge_density = grad_mag.mean() / 255.0 if grad_mag.size > 0 else 0.0
 

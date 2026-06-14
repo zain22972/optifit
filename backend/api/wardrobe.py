@@ -1,6 +1,9 @@
 # OptiFit 2.0 Wardrobe API Blueprint
 import os
 import uuid
+import base64
+import requests
+import json
 from flask import Blueprint, request, jsonify, g, url_for
 from werkzeug.utils import secure_filename
 
@@ -222,3 +225,211 @@ def delete_wardrobe_item(item_id):
         return jsonify({'message': 'Error deleting wardrobe item.', 'error': str(e)}), 500
     finally:
         conn.close()
+
+def get_gemini_api_key():
+    key = os.environ.get('GEMINI_API_KEY')
+    if key:
+        return key
+    # Try reading from .env in backend/ or project root
+    for env_path in [
+        os.path.join(os.path.dirname(__file__), '..', '.env'),
+        os.path.join(os.path.dirname(__file__), '..', '..', '.env'),
+    ]:
+        if os.path.exists(env_path):
+            try:
+                with open(env_path, 'r') as f:
+                    for line in f:
+                        if line.strip().startswith('GEMINI_API_KEY='):
+                            return line.strip().split('=', 1)[1].strip().strip('"').strip("'")
+            except Exception:
+                pass
+    return None
+@wardrobe_bp.route('/wardrobe/analyze-photo', methods=['POST'])
+@token_required
+def analyze_photo():
+    api_key = get_gemini_api_key()
+    use_fallback = False
+
+    image_base64 = None
+    mime_type = "image/jpeg"
+
+    if 'image' in request.files:
+        file = request.files['image']
+        if file.filename != '':
+            ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else 'jpg'
+            if ext == 'png':
+                mime_type = 'image/png'
+            elif ext == 'webp':
+                mime_type = 'image/webp'
+            image_base64 = base64.b64encode(file.read()).decode('utf-8')
+    else:
+        data = request.get_json() or {}
+        image_base64_raw = data.get('image')
+        if image_base64_raw:
+            if ',' in image_base64_raw:
+                header, image_base64 = image_base64_raw.split(',', 1)
+                if 'png' in header:
+                    mime_type = 'image/png'
+                elif 'webp' in header:
+                    mime_type = 'image/webp'
+            else:
+                image_base64 = image_base64_raw
+
+    if not image_base64:
+        return jsonify({'message': 'No image provided. Upload a file or send base64 data.'}), 400
+
+    if not api_key:
+        print("Gemini API Key is missing. Falling back to local CV analyzer.")
+        use_fallback = True
+    else:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+        
+        prompt = """
+        Analyze this clothing item image and provide its details in a JSON object.
+        The output must strictly be a JSON object conforming to the following schema and choosing ONLY from the specified options:
+        {
+          "category": "Tops" | "Bottoms" | "Footwear" | "Accessories",
+          "subcategory": "Shirt" | "T-Shirt" | "Jeans" | "Jacket" | "Kurta" | "Dress" | "Shoes" | "Blazer" | "Hoodie",
+          "color": "Black" | "White" | "Blue" | "Green" | "Red" | "Yellow" | "Brown",
+          "style": "Casual" | "Formal" | "Party" | "Traditional" | "Streetwear",
+          "season": "Summer" | "Winter" | "Rainy"
+        }
+
+        Return ONLY the raw JSON block without markdown formatting or other explanation.
+        """
+
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {"text": prompt},
+                        {
+                            "inlineData": {
+                                "mimeType": mime_type,
+                                "data": image_base64
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+
+        try:
+            response = requests.post(url, json=payload, headers={"Content-Type": "application/json"}, timeout=30)
+            if response.status_code != 200:
+                print(f"Gemini API returned status {response.status_code}: {response.text}. Falling back to local CV analyzer.")
+                use_fallback = True
+            else:
+                result_json = response.json()
+                text_content = result_json['candidates'][0]['content']['parts'][0]['text']
+                
+                clean_text = text_content.strip()
+                if clean_text.startswith("```"):
+                    lines = clean_text.splitlines()
+                    if lines[0].startswith("```"):
+                        lines = lines[1:]
+                    if lines[-1].startswith("```"):
+                        lines = lines[:-1]
+                    clean_text = "\n".join(lines).strip()
+                    
+                parsed_details = json.loads(clean_text)
+        except Exception as e:
+            print(f"Gemini API call or parsing failed: {e}. Falling back to local CV analyzer.")
+            use_fallback = True
+
+    try:
+        if use_fallback:
+            unique_name = f"scan-{uuid.uuid4().hex}.jpg"
+            filepath = os.path.join(UPLOAD_FOLDER, unique_name)
+            
+            if 'image' in request.files:
+                request.files['image'].seek(0)
+                request.files['image'].save(filepath)
+            else:
+                with open(filepath, "wb") as fh:
+                    fh.write(base64.b64decode(image_base64))
+            
+            analysis = analyze_clothing_item(filepath)
+            
+            subcategory = analysis.get('category', 'T-Shirt')
+            color = analysis.get('color', 'Black')
+            style = analysis.get('style', 'Casual')
+            season = analysis.get('season', 'Summer')
+            
+            sub_to_main = {
+                "Shirt": "Tops", "T-Shirt": "Tops", "Jacket": "Tops", "Kurta": "Tops", "Hoodie": "Tops",
+                "Jeans": "Bottoms",
+                "Shoes": "Footwear",
+                "Dress": "Tops",
+                "Blazer": "Accessories"
+            }
+            category = sub_to_main.get(subcategory, "Tops")
+        else:
+            valid_categories = ["Tops", "Bottoms", "Footwear", "Accessories"]
+            valid_subcategories = ["Shirt", "T-Shirt", "Jeans", "Jacket", "Kurta", "Dress", "Shoes", "Blazer", "Hoodie"]
+            valid_colors = ["Black", "White", "Blue", "Green", "Red", "Yellow", "Brown"]
+            valid_styles = ["Casual", "Formal", "Party", "Traditional", "Streetwear"]
+            valid_seasons = ["Summer", "Winter", "Rainy"]
+
+            category = parsed_details.get("category", "Tops")
+            if category not in valid_categories:
+                category = "Tops"
+                
+            subcategory = parsed_details.get("subcategory", "T-Shirt")
+            if subcategory not in valid_subcategories:
+                subcategory = "T-Shirt"
+                
+            color = parsed_details.get("color", "Black")
+            if color not in valid_colors:
+                color = "Black"
+                
+            style = parsed_details.get("style", "Casual")
+            if style not in valid_styles:
+                style = "Casual"
+                
+            season = parsed_details.get("season", "Summer")
+            if season not in valid_seasons:
+                season = "Summer"
+
+            unique_name = f"scan-{uuid.uuid4().hex}.jpg"
+            filepath = os.path.join(UPLOAD_FOLDER, unique_name)
+            
+            if 'image' in request.files:
+                request.files['image'].seek(0)
+                request.files['image'].save(filepath)
+            else:
+                with open(filepath, "wb") as fh:
+                    fh.write(base64.b64decode(image_base64))
+                    
+        image_url = f"/uploads/{unique_name}"
+
+        user_id = g.current_user['id']
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO wardrobe (user_id, image_url, category, subcategory, color, style, season)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (user_id, image_url, category, subcategory, color, style, season))
+        
+        item_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+
+        message = 'Gemini analyzed image successfully.' if not use_fallback else 'Gemini API failed. Local CV model analyzed image successfully.'
+
+        return jsonify({
+            'message': message,
+            'item': {
+                'id': item_id,
+                'user_id': user_id,
+                'image_url': image_url,
+                'category': category,
+                'subcategory': subcategory,
+                'color': color,
+                'style': style,
+                'season': season
+            }
+        }), 200
+
+    except Exception as e:
+        return jsonify({'message': 'Error analyzing photo.', 'error': str(e)}), 500

@@ -1,0 +1,25 @@
+# Virtual Environment
+backend/.venv/
+.venv/
+ENV/
+env/
+
+# Environment Secrets
+backend/.env
+.env
+
+# Python Cache
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# User Uploads
+uploads/
+
+# IDE/Agent Configs and Logs
+.agent/
+.jac/
+.idea/
+.vscode/
+*.log
