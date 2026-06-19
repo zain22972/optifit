@@ -292,7 +292,7 @@ export const OutfitGenerator = () => {
                       src={generatedOutfit.image_url.startsWith('http') ? generatedOutfit.image_url : `${API_BASE_URL}${generatedOutfit.image_url}`} 
                       alt={generatedOutfit.name}
                       className="w-full h-full object-cover"
-                      onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=60" }}
+                      onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=600&auto=format&fit=crop&q=60" }}
                     />
                     <div className="absolute top-3 left-3 flex gap-2">
                       <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-600/90 text-white backdrop-blur-sm">Synthesis Result</span>

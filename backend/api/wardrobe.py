@@ -285,15 +285,20 @@ def analyze_photo():
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
         
         prompt = """
-        Analyze this clothing item image and provide its details in a JSON object.
+        Analyze this image to see if it is a clothing item, footwear, or a clothing accessory (e.g., shirt, pants, dress, shoes, blazer, jacket).
         The output must strictly be a JSON object conforming to the following schema and choosing ONLY from the specified options:
         {
+          "is_clothing": true | false,
           "category": "Tops" | "Bottoms" | "Footwear" | "Accessories",
           "subcategory": "Shirt" | "T-Shirt" | "Jeans" | "Jacket" | "Kurta" | "Dress" | "Shoes" | "Blazer" | "Hoodie",
           "color": "Black" | "White" | "Blue" | "Green" | "Red" | "Yellow" | "Brown",
           "style": "Casual" | "Formal" | "Party" | "Traditional" | "Streetwear",
           "season": "Summer" | "Winter" | "Rainy"
         }
+
+        Strict Rules:
+        - "is_clothing" must be true only if the image contains a clear clothing item, footwear, or clothing accessory. If the image is a person's face, a landscape, animals, food, or non-clothing items, "is_clothing" MUST be false.
+        - Even if a person is wearing clothes, if it's a full portrait or a generic photo of a person rather than a clear product/flat-lay/isolated photo of a garment, prioritize detecting if it's suitable for a virtual wardrobe item, otherwise set "is_clothing" to false or true accordingly.
 
         Return ONLY the raw JSON block without markdown formatting or other explanation.
         """
@@ -333,6 +338,10 @@ def analyze_photo():
                     clean_text = "\n".join(lines).strip()
                     
                 parsed_details = json.loads(clean_text)
+                
+                # Check validation
+                if not parsed_details.get("is_clothing", True):
+                    return jsonify({'message': 'Only clothing photos are allowed to be uploaded. Please upload a clear photo of a single clothing item, footwear, or clothing accessory.'}), 400
         except Exception as e:
             print(f"Gemini API call or parsing failed: {e}. Falling back to local CV analyzer.")
             use_fallback = True

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, Trash2, Edit2, CloudUpload, Info, Camera, Filter, X, Check,
-  Shirt, Palette, Sun, Wind, MoveVertical
+  Shirt, Palette, Sun, Wind, MoveVertical, AlertCircle
 } from 'lucide-react';
 import api, { API_BASE_URL } from '../services/api';
 import { CameraScanner } from '../components/CameraScanner';
@@ -282,6 +282,10 @@ export const Wardrobe = () => {
             <div className="mt-4 flex items-start gap-2.5 p-3 rounded-2xl bg-indigo-500/5 text-indigo-500 text-[10px] leading-relaxed">
               <Info className="h-4 w-4 shrink-0 mt-0.5" />
               <span>AI vision automatically detects color, category, style, and season.</span>
+            </div>
+            <div className="mt-2.5 flex items-start gap-2.5 p-3 rounded-2xl bg-amber-500/5 text-amber-500 text-[10px] leading-relaxed border border-amber-500/10">
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+              <span><strong>Disclaimer:</strong> Please upload photos of clothes only. Uploading non-clothing photos will be rejected by the system.</span>
             </div>
           </div>
         </motion.div>

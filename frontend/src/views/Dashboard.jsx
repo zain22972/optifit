@@ -289,7 +289,7 @@ export const Dashboard = ({ weatherState }) => {
                   src={ootd.image_url.startsWith('http') ? ootd.image_url : `${API_BASE_URL}${ootd.image_url}`} 
                   alt={ootd.name}
                   className="w-full h-full object-cover"
-                  onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=60" }}
+                  onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=600&auto=format&fit=crop&q=60" }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                 <div className="absolute bottom-3 left-3 right-3 flex gap-2">
@@ -401,7 +401,7 @@ export const Dashboard = ({ weatherState }) => {
                       src={item.image_url.startsWith('http') ? item.image_url : `${API_BASE_URL}${item.image_url}`} 
                       alt={item.name}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=60" }}
+                      onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=600&auto=format&fit=crop&q=60" }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <motion.div
@@ -490,7 +490,7 @@ export const Dashboard = ({ weatherState }) => {
                       src={selectedOutfit.image_url.startsWith('http') ? selectedOutfit.image_url : `${API_BASE_URL}${selectedOutfit.image_url}`} 
                       alt={selectedOutfit.name}
                       className="w-full h-full object-cover"
-                      onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=60" }}
+                      onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=600&auto=format&fit=crop&q=60" }}
                     />
                   </div>
                   
