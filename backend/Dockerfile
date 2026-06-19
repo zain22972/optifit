@@ -24,8 +24,9 @@ COPY backend/ ./backend/
 COPY ml/ ./ml/
 COPY models/ ./models/
 COPY database/ ./database/
-COPY assets/ ./assets/
-COPY uploads/ ./uploads/
+
+# Create empty directories for uploads and assets (since they are git-ignored or empty)
+RUN mkdir -p assets uploads
 
 # Expose backend port
 EXPOSE 5000
