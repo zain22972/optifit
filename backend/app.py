@@ -87,5 +87,6 @@ def health_check():
     }), 200
 
 if __name__ == '__main__':
-    # Run the server on port 5000
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Run the server, binding dynamically to the PORT env var (required by Render)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
