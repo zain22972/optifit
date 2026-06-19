@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: optifit-backend
+    runtime: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: PERSISTENT_DATA_DIR
+        value: /app/data-mount
+    disk:
+      name: optifit-data
+      mountPath: /app/data-mount
+      sizeGB: 1

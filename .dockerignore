@@ -1,0 +1,16 @@
+.git
+.gitignore
+.agent/
+.jac/
+frontend/node_modules/
+frontend/dist/
+backend/.venv/
+backend/__pycache__/
+ml/__pycache__/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.db
+.vscode/
+.idea/

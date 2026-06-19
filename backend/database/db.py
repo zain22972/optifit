@@ -3,6 +3,9 @@ import os
 import sqlite3
 
 DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'database', 'optifit.db'))
+PERSISTENT_DATA_DIR = os.environ.get('PERSISTENT_DATA_DIR')
+if PERSISTENT_DATA_DIR:
+    DB_PATH = os.path.abspath(os.path.join(PERSISTENT_DATA_DIR, 'database', 'optifit.db'))
 
 def get_db():
     """
@@ -10,7 +13,14 @@ def get_db():
     and foreign key constraints enabled.
     """
     if not os.path.exists(DB_PATH):
-        raise FileNotFoundError(f"Database file not found at {DB_PATH}. Please run the seeder first.")
+        # Auto-initialize database on persistent disk from seed if available
+        seeded_db = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'database', 'optifit.db'))
+        if PERSISTENT_DATA_DIR and os.path.exists(seeded_db):
+            os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+            import shutil
+            shutil.copy2(seeded_db, DB_PATH)
+        else:
+            raise FileNotFoundError(f"Database file not found at {DB_PATH}. Please run the seeder first.")
         
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row

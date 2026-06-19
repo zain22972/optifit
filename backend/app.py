@@ -24,7 +24,26 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Configurations
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-UPLOAD_FOLDER = os.path.join(PROJECT_ROOT, 'uploads')
+PERSISTENT_DATA_DIR = os.environ.get('PERSISTENT_DATA_DIR')
+
+if PERSISTENT_DATA_DIR:
+    UPLOAD_FOLDER = os.path.join(PERSISTENT_DATA_DIR, 'uploads')
+    # Auto-initialize uploads directory on persistent disk
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+        local_uploads = os.path.join(PROJECT_ROOT, 'uploads')
+        if os.path.exists(local_uploads):
+            import shutil
+            for item in os.listdir(local_uploads):
+                s = os.path.join(local_uploads, item)
+                d = os.path.join(UPLOAD_FOLDER, item)
+                if os.path.isdir(s):
+                    shutil.copytree(s, d, dirs_exist_ok=True)
+                else:
+                    shutil.copy2(s, d)
+else:
+    UPLOAD_FOLDER = os.path.join(PROJECT_ROOT, 'uploads')
+
 ASSETS_FOLDER = os.path.join(PROJECT_ROOT, 'assets')
 
 # Ensure directories exist
